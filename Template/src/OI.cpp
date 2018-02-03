@@ -12,6 +12,7 @@
 
 OI::OI() {
 	this->leftJoystick = new Joystick(kLeftJoystickIndex);
+	leftJoystick.whenpressed
 }
 
 

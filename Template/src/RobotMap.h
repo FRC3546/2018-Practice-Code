@@ -24,6 +24,11 @@
  constexpr int kLeftJoystickIndex = 0;
  constexpr int kTwistRawAxis = 3;
 
+//Grab motor = PWM port
+ constexpr int kGrabMotor1 = 5;
+ constexpr int kGrabMotor2 = 4;
+ constexpr int kJoystickGrabButton = 3;
+ constexpr int kJoystickRelease Button = 2;
 // If you are using multiple modules, make sure to define both the port
 // number and the module. For example you with a rangefinder:
 // constexpr int kRangeFinderPort = 1;

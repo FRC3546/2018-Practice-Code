@@ -40,6 +40,10 @@ class Robot: public SampleRobot
     const static int gripperleftmotor = 2;		// CAN ID
     const static int gripperightmotor = 1;		// CAN ID
 
+    //Solenoids
+    const static int solenoid_aport = 0;
+    const static int solenoid_bport = 1;
+
     // SUBSYSTEM DEFINITION
     RobotDrive robotDrive;    // Robot drive system
     Joystick stick;           // Driver Joystick
@@ -48,6 +52,7 @@ class Robot: public SampleRobot
 
     WPI_TalonSRX *gripperLeft;
     WPI_TalonSRX *gripperRight;
+    DoubleSolenoid *solenoid;
 
 ;
 public:
@@ -58,7 +63,10 @@ public:
     {
 
         robotDrive.SetExpiration(0.1);
-        //robotDrive.SetInvertedMotor(RobotDrive::kFrontRightMotor, true);    // invert left side motors
+
+        // Invert Motors on the Robot's RIGHT side
+        robotDrive.SetInvertedMotor(RobotDrive::kFrontRightMotor, true);
+        robotDrive.SetInvertedMotor(RobotDrive::kRearRightMotor, true);
 
         c = new Compressor(pcmid);
         c->SetClosedLoopControl(true);        // turn on compressor, set to false to turn off
@@ -88,6 +96,7 @@ public:
             LiveWindow::GetInstance()->AddSensor("IMU", "gyro", ahrs);
         }
 
+        solenoid = new DoubleSolenoid(pcmid, solenoid_aport, solenoid_bport);
 
     }
 
@@ -142,6 +151,8 @@ public:
            		            if ( pressSpitout ) {
            		                GripperSpitout();
            		            }
+
+           	solenoid->Set(DoubleSolenoid::Value::kForward);
 
 
             try {
