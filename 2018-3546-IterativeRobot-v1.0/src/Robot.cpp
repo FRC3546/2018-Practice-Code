@@ -31,7 +31,7 @@ class Robot: public SampleRobot
 
     // JOYSTICK DEFINITION
     const static int joystickChannel = 0;
-    const static int kJoystick_Twist_RawAxis = 4;
+    const static int kJoystick_Twist_RawAxis = 2;
 
     // PNEUMATICS CONTROL MODULE DEFINITION
     const static int pcmid = 0;			// CAN ID
