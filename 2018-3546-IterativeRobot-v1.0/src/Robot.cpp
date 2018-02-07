@@ -31,7 +31,7 @@ class Robot: public SampleRobot
 
     // JOYSTICK DEFINITION
     const static int joystickChannel = 0;
-    const static int kJoystick_Twist_RawAxis = 2;
+    const static int kJoystick_Twist_RawAxis = 3;
 
     // PNEUMATICS CONTROL MODULE DEFINITION
     const static int pcmid = 0;			// CAN ID
@@ -135,21 +135,38 @@ public:
                 ahrs->ZeroYaw();
             }
 
-        	bool pressStop = stick.GetRawButton(3);
-           		            if ( pressStop ) {
-           		                StopGripperMotors();
-           		            }
+
+        	//bool pressStop = stick.GetRawButton(3);
+	          //  if ( pressStop ) {
+	          //      StopGripperMotors();
+	          //  }
 
 
         	bool pressIntake = stick.GetRawButton(4);
-           		            if ( pressIntake ) {
+           		            while ( pressIntake ) {
            		                GripperIntake();
+           		             pressIntake = stick.GetRawButton(4);
+           		             if(!pressIntake){
+           		            	 StopGripperMotors();
+           		             }
+            		        //    if ( pressStop ) {
+            		        //        StopGripperMotors();
+            		        //        break;
+            		        //    }
            		            }
 
 
         	bool pressSpitout = stick.GetRawButton(5);
-           		            if ( pressSpitout ) {
+           		            while ( pressSpitout ) {
            		                GripperSpitout();
+           		             pressSpitout = stick.GetRawButton(5);
+           		             if(!pressSpitout){
+           		            	 StopGripperMotors();
+           		             }
+            		         //   if ( pressStop ) {
+            		         //       StopGripperMotors();
+            		         //       break;
+            		         //   }
            		            }
 
            	solenoid->Set(DoubleSolenoid::Value::kForward);
