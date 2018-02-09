@@ -38,6 +38,9 @@ class Robot: public SampleRobot
     const static int gripperRight2 = 1;
     const static int gripperLeft2 = 2;
     const static int gripperBL = 3;
+    const static int platform_release = 4;
+    const static int platform_extend = 5;
+
 
     // GRIPPER MOTOR DEFINITION
     const static int gripperleftmotor = 2;		// CAN ID
@@ -54,11 +57,16 @@ class Robot: public SampleRobot
     AHRS *ahrs;               // navX MXP
     Compressor *c;            // create compressor
 
+    WPI_TalonSRX *gripperLeft;
+	WPI_TalonSRX *gripperRight;
+
+	// DOUBLE SOLENOID PORTS
     DoubleSolenoid *solenoidGL;
     DoubleSolenoid *solenoidGR;
     DoubleSolenoid *solenoidBL;
     DoubleSolenoid *solenoid;
-
+    DoubleSolenoid *solenoidPL_REL;		//Platform Release
+    DoubleSolenoid *solenoidPL_EXT      //Platform Extend
 ;
 public:
     Robot() :
@@ -102,10 +110,11 @@ public:
         }
 
         solenoid = new DoubleSolenoid(pcmid, solenoid_aport, solenoid_bport);
-
-        solenoidGR = new DoubleSolenoid(gripperRight2);
-        solenoidGL = new DoubleSolenoid(gripperLeft2);
-        solenoidBL = new DoubleSolenoid(gripperBL);
+        solenoidGR = new DoubleSolenoid(gripperRight2, solenoid_aport, solenoid_bport);
+        solenoidGL = new DoubleSolenoid(gripperLeft2, solenoid_aport, solenoid_bport);
+        solenoidBL = new DoubleSolenoid(gripperBL, solenoid_aport, solenoid_bport);
+        solenoidPL_REL = new DoubleSolenoid(platform_release, solenoid_aport, solenoid_bport);
+        solenoidPL_EXT = new DoubleSolenoid(platform_extend, solenoid_aport, solenoid_bport);
 
     }
 
@@ -160,7 +169,7 @@ public:
            		             }
             		        //    if ( pressStop ) {
             		        //        StopGripperMotors();
-+            		        //        break;
+            		        //        break;
             		        //    }
            		            }
 
@@ -183,6 +192,8 @@ public:
            	solenoidGR->Set(DoubleSolenoid::Value::kForward);
            	solenoidGL->Set(DoubleSolenoid::Value::kForward);
            	solenoidBL->Set(DoubleSolenoid::Value::kForward);
+           	solenoidPL_REL->Set(DoubleSolenoid::Value::kForward);
+           	solenoidPL_EXT->Set(DoubleSolenoid::Value::kForward);
 
 
             try {
