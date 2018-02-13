@@ -31,7 +31,7 @@ class Robot: public SampleRobot
 
     // JOYSTICK DEFINITION
     const static int joystickChannel = 0;
-    const static int kJoystick_Twist_RawAxis = 3;
+    const static int kJoystick_Twist_RawAxis = 2;
 
     // PNEUMATICS CONTROL MODULE DEFINITION
     const static int pcmid = 0;			// CAN ID
@@ -61,12 +61,9 @@ class Robot: public SampleRobot
 	WPI_TalonSRX *gripperRight;
 
 	// DOUBLE SOLENOID PORTS
-    DoubleSolenoid *solenoidGL;
-    DoubleSolenoid *solenoidGR;
-    DoubleSolenoid *solenoidBL;
-    DoubleSolenoid *solenoid;
-    DoubleSolenoid *solenoidPL_REL;		//Platform Release
-    DoubleSolenoid *solenoidPL_EXT      //Platform Extend
+    DoubleSolenoid *solenoidGR_UD;
+    DoubleSolenoid *solenoidGR_OC;
+    DoubleSolenoid *solenoidFL_ER;
 ;
 public:
     Robot() :
@@ -109,12 +106,9 @@ public:
             LiveWindow::GetInstance()->AddSensor("IMU", "gyro", ahrs);
         }
 
-        solenoid = new DoubleSolenoid(pcmid, solenoid_aport, solenoid_bport);
-        solenoidGR = new DoubleSolenoid(gripperRight2, solenoid_aport, solenoid_bport);
-        solenoidGL = new DoubleSolenoid(gripperLeft2, solenoid_aport, solenoid_bport);
-        solenoidBL = new DoubleSolenoid(gripperBL, solenoid_aport, solenoid_bport);
-        solenoidPL_REL = new DoubleSolenoid(platform_release, solenoid_aport, solenoid_bport);
-        solenoidPL_EXT = new DoubleSolenoid(platform_extend, solenoid_aport, solenoid_bport);
+        solenoidGR_UD = new DoubleSolenoid(1, 0, 1);
+        solenoidGR_OC = new DoubleSolenoid(1, 2, 3);
+        solenoidFL_ER = new DoubleSolenoid(1, 4, 5);
 
     }
 
@@ -154,16 +148,16 @@ public:
             }
 
 
-        	//bool pressStop = stick.GetRawButton(3);
-	          //  if ( pressStop ) {
-	          //      StopGripperMotors();
-	          //  }
+        	bool pressStop = stick.GetRawButton(12);
+	            if ( pressStop ) {
+	                StopGripperMotors();
+	            }
 
 
-        	bool pressIntake = stick.GetRawButton(4);
+        	bool pressIntake = stick.GetRawButton(3);
            		            while ( pressIntake ) {
            		                GripperIntake();
-           		             pressIntake = stick.GetRawButton(4);
+           		             pressIntake = stick.GetRawButton(3);
            		             if(!pressIntake){
            		            	 StopGripperMotors();
            		             }
@@ -174,10 +168,10 @@ public:
            		            }
 
 
-        	bool pressSpitout = stick.GetRawButton(5);
+        	bool pressSpitout = stick.GetRawButton(4);
            		            while ( pressSpitout ) {
            		                GripperSpitout();
-           		             pressSpitout = stick.GetRawButton(5);
+           		             pressSpitout = stick.GetRawButton(4);
            		             if(!pressSpitout){
            		            	 StopGripperMotors();
            		             }
@@ -187,14 +181,50 @@ public:
             		         //   }
            		            }
 
-           	solenoid->Set(DoubleSolenoid::Value::kForward);
+           	bool gripperUp = stick.GetRawButton(5);
+           					if ( gripperUp ) {
+           						solenoidGR_UD->Set(DoubleSolenoid::Value::kForward);
+
+           					}
+
+           	bool gripperDown = stick.GetRawButton(6);
+           					if ( gripperDown ) {
+           					    solenoidGR_UD->Set(DoubleSolenoid::Value::kReverse);
+
+           					}
+
+           	bool gripperOpen = stick.GetRawButton(8);
+           					if ( gripperOpen ) {
+           					    solenoidGR_OC->Set(DoubleSolenoid::Value::kForward);
+
+           					}
+
+           	bool gripperClose = stick.GetRawButton(7);
+           					if ( gripperClose ) {
+           					    solenoidGR_OC->Set(DoubleSolenoid::Value::kReverse);
+
+           					}
+
+           	bool flipperEject = stick.GetRawButton(9);
+           					if ( flipperEject ) {
+           					    solenoidFL_ER->Set(DoubleSolenoid::Value::kForward);
+
+           					}
+
+           	bool flipperRetract = stick.GetRawButton(10);
+           					if ( flipperRetract ) {
+           					    solenoidFL_ER->Set(DoubleSolenoid::Value::kReverse);
+
+           					}
+
+       /*    	solenoid->Set(DoubleSolenoid::Value::kForward);
 
            	solenoidGR->Set(DoubleSolenoid::Value::kForward);
            	solenoidGL->Set(DoubleSolenoid::Value::kForward);
            	solenoidBL->Set(DoubleSolenoid::Value::kForward);
            	solenoidPL_REL->Set(DoubleSolenoid::Value::kForward);
            	solenoidPL_EXT->Set(DoubleSolenoid::Value::kForward);
-
+*/ //Out for now - update later
 
             try {
                 /* Use the joystick X axis for lateral movement,            */
