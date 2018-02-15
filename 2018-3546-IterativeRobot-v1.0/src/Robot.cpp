@@ -1,6 +1,7 @@
 #include <iostream>
 #include "WPILib.h"
 #include "AHRS.h"
+#include "Joystick.h"
 #include <AnalogPotentiometer.h>
 #include <DigitalInput.h>
 #include <SPI.h>
@@ -31,6 +32,7 @@ class Robot: public SampleRobot
 
     // JOYSTICK DEFINITION
     const static int joystickChannel = 0;
+    const static int joystickChannel1 = 1;
     const static int kJoystick_Twist_RawAxis = 2;
 
     // PNEUMATICS CONTROL MODULE DEFINITION
@@ -54,6 +56,7 @@ class Robot: public SampleRobot
     // SUBSYSTEM DEFINITION
     RobotDrive robotDrive;    // Robot drive system
     Joystick stick;           // Driver Joystick
+    Joystick costick;
     AHRS *ahrs;               // navX MXP
     Compressor *c;            // create compressor
 
@@ -61,16 +64,18 @@ class Robot: public SampleRobot
 	WPI_TalonSRX *gripperRight;
 
 	// DOUBLE SOLENOID PORTS
-    DoubleSolenoid *solenoidGR_UD;
-    DoubleSolenoid *solenoidGR_OC;
-    DoubleSolenoid *solenoidFL_ER;
+    DoubleSolenoid *solenoidGR_UD;		// Solenoid Gripper Up-Down motion
+    DoubleSolenoid *solenoidGR_OC;		// Solenoid Gripper Open-Close motion
+    DoubleSolenoid *solenoidFL_ER;		// Solenoid Flipper Extend-Retract
 ;
 public:
     Robot() :
             robotDrive(frontLeftChannel, rearLeftChannel,
                        frontRightChannel, rearRightChannel),      // initialize variables in
-            stick(joystickChannel)                                // same order declared above
+            stick(joystickChannel),                                // same order declared above
+			costick(joystickChannel1)
     {
+
 
         robotDrive.SetExpiration(0.1);
 
@@ -121,11 +126,11 @@ public:
 
     void GripperIntake(void)
 	{
-		gripperLeft->Set(0.4);
-		gripperRight->Set(-0.4);
+		gripperLeft->Set(0.65);
+		gripperRight->Set(-0.65);
 	}
 
-    void GripperSpitout(void)
+    void GripperRelease(void)
    	{
    		gripperLeft->Set(-0.65);
    		gripperRight->Set(0.65);
@@ -148,74 +153,67 @@ public:
             }
 
 
-        	bool pressStop = stick.GetRawButton(12);
+      /*  	bool pressStop = stick.GetRawButton(12);
 	            if ( pressStop ) {
 	                StopGripperMotors();
 	            }
+	   Not on sheet so Jessica commented out
+	  */
 
+            // TURN GRIPPER MOTORS ON FOR POWER CUBE INTAKE OR RELEASE
+			bool pressRelease = costick.GetRawButton(3);
+        	bool pressIntake = costick.GetRawButton(1);
 
-        	bool pressIntake = stick.GetRawButton(3);
-           		            while ( pressIntake ) {
-           		                GripperIntake();
-           		             pressIntake = stick.GetRawButton(3);
-           		             if(!pressIntake){
-           		            	 StopGripperMotors();
-           		             }
-            		        //    if ( pressStop ) {
-            		        //        StopGripperMotors();
-            		        //        break;
-            		        //    }
-           		            }
+        	if (pressRelease && !pressIntake)
+        	{
+        		GripperRelease();
+        	}
+        	else if (!pressRelease && pressIntake)
+        	{
+        		GripperIntake();
+        	}
+        	else
+        	{
+        		StopGripperMotors();
+        	}
 
+        	// TOGGLE GRIPPER UP-DOWN WITH CO-DRIVER JOYSTICK BUTTON 8
+           	bool gripper_updown_status = costick.GetRawButton(8);
+			if (gripper_updown_status)
+			{
+				if (solenoidGR_UD->Get()== 2 )
+				{
+					solenoidGR_UD->Set(DoubleSolenoid::Value::kForward);
+					Wait(1);
+				}
+				else
+				{
+					solenoidGR_UD->Set(DoubleSolenoid::Value::kReverse);
+					Wait(1);
+				}
+			}
 
-        	bool pressSpitout = stick.GetRawButton(4);
-           		            while ( pressSpitout ) {
-           		                GripperSpitout();
-           		             pressSpitout = stick.GetRawButton(4);
-           		             if(!pressSpitout){
-           		            	 StopGripperMotors();
-           		             }
-            		         //   if ( pressStop ) {
-            		         //       StopGripperMotors();
-            		         //       break;
-            		         //   }
-           		            }
+			// OPEN GRIPPER WITH BUTTON 2
+           	bool gripperOpen = costick.GetRawButton(2);
+           	if ( gripperOpen )
+           	{
+           		solenoidGR_OC->Set(DoubleSolenoid::Value::kReverse);
+           	}
+           	else solenoidGR_OC->Set(DoubleSolenoid::Value::kForward);
 
-           	bool gripperUp = stick.GetRawButton(5);
-           					if ( gripperUp ) {
-           						solenoidGR_UD->Set(DoubleSolenoid::Value::kForward);
+           	// EJECT POWER CUBE USING FLIPPER WITH BUTTON 12
+           	bool flipperEject = costick.GetRawButton(12);
+           	if ( flipperEject )
+           	{
+           		solenoidGR_OC->Set(DoubleSolenoid::Value::kReverse);
+           		Wait(2);
+           		solenoidFL_ER->Set(DoubleSolenoid::Value::kForward);
+           		Wait(0.5);
+           		solenoidFL_ER->Set(DoubleSolenoid::Value::kReverse);
+           		Wait(2);
+           		solenoidGR_OC->Set(DoubleSolenoid::Value::kForward);
+           	}
 
-           					}
-
-           	bool gripperDown = stick.GetRawButton(6);
-           					if ( gripperDown ) {
-           					    solenoidGR_UD->Set(DoubleSolenoid::Value::kReverse);
-
-           					}
-
-           	bool gripperOpen = stick.GetRawButton(8);
-           					if ( gripperOpen ) {
-           					    solenoidGR_OC->Set(DoubleSolenoid::Value::kForward);
-
-           					}
-
-           	bool gripperClose = stick.GetRawButton(7);
-           					if ( gripperClose ) {
-           					    solenoidGR_OC->Set(DoubleSolenoid::Value::kReverse);
-
-           					}
-
-           	bool flipperEject = stick.GetRawButton(9);
-           					if ( flipperEject ) {
-           					    solenoidFL_ER->Set(DoubleSolenoid::Value::kForward);
-
-           					}
-
-           	bool flipperRetract = stick.GetRawButton(10);
-           					if ( flipperRetract ) {
-           					    solenoidFL_ER->Set(DoubleSolenoid::Value::kReverse);
-
-           					}
 
        /*    	solenoid->Set(DoubleSolenoid::Value::kForward);
 
